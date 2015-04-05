@@ -2,15 +2,11 @@
 <items>
   <item>
     <name>Shawshang redemption</name>
-    <description>Paitience pays off</description>
-  </item>
-  <item>
-    <name>Inception</name>
-    <description>Dream within a dream, within a dream, within a dream, within a ...</description>
+    <description>Patience breeds fruit. Morgan Freeman.</description>
   </item>
   <item>
     <name>Interstellar</name>
-    <description>Emotional epicness, Hans Zimmer best of</description>
+    <description>Emotional epicness, Hans Zimmer best of!</description>
   </item>
   <item>
     <name>Shutter Island</name>
@@ -19,5 +15,17 @@
   <item>
     <name>Dark Knight</name>
     <description>Nolan's dark knight is worth watching 1000 times</description>
+  </item>
+  <item>
+    <name>Trainspotting</name>
+    <description>Going to the toilet...</description>
+  </item>
+  <item>
+    <name>The Fifth Element</name>
+    <description>Multipas</description>
+  </item>
+  <item>
+    <name>I, Legend</name>
+    <description>Will Smith</description>
   </item>
 </items>

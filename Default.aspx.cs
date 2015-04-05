@@ -9,20 +9,21 @@ using System.Xml.Linq;
 
 public partial class _Default : Page
 {
+    //CRUD Operations working. Play still needs some attention with duplicities and file ending solution (in case .srt is before .avi, don't run .srt file).
     protected bool _movies = false;
     protected bool _books = false;
     protected bool _music = false;
     protected bool _games = false;
     protected Dictionary<string, string> _itemDict;
-    protected string current = "";
+    protected string content = "";
+    private string videosLocation = "";
+    private string dbLoc = AppDomain.CurrentDomain.BaseDirectory + @"\db\";
 
     protected void Page_Load(object sender, EventArgs e)
     {
         try
         {
-            //TODO:
-            //figure out why clicking ADD always shows EventHandler on PAge error. Postback shit.
-                string content = "";
+            LoadLocation();
                 if (Request.QueryString["content"] != null)
                 {
                     content = Request.QueryString["content"].Trim();
@@ -33,6 +34,20 @@ public partial class _Default : Page
                         {
                             var queryString = Request.QueryString["rid"];
                             DeleteItem(queryString, content);
+                        }
+                        else
+                        {
+                            if (action == "play")
+                            {
+                                var movieToPlay = Request.QueryString["rid"];
+                                PlayItem(movieToPlay);
+                            }
+                            else if(action == "update")
+                            {
+                                var itemToUpdate = Request.QueryString["rid"];
+                                var newDescription = Request.QueryString["newvalue"];
+                                UpdateItemDesc(itemToUpdate, newDescription);
+                            }
                         }
                     }
                     var action2 = Request.Form["action"];
@@ -56,11 +71,80 @@ public partial class _Default : Page
         }
     }
 
+    private void LoadLocation()
+    {
+        using (StreamReader sr = new StreamReader(new FileStream(@"D:\mojweb\videos.txt", FileMode.Open, FileAccess.ReadWrite)))
+        {
+            videosLocation = sr.ReadToEnd();
+        }
+    }
+
+    private void UpdateItemDesc(string itemName, string newDesc)
+    {
+        string path = dbLoc + content + ".xml";
+        XDocument doc;
+        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
+        {
+            doc = XDocument.Load(fs);
+            var element = doc.Descendants("item").Where(x => x.Elements()
+                                                           .First()
+                                                           .Value == itemName);
+            foreach(var item in element.Elements())
+            {
+                if(item.Name == "description")
+                {
+                    item.Value = newDesc;
+                }
+            }
+        }
+        doc.Save(path);
+    }
+
+    private void PlayItem(string itemName)
+    {
+        string[] allFiles = System.IO.Directory.GetFiles(videosLocation);
+        string[] allDirectories = System.IO.Directory.GetDirectories(videosLocation);
+        bool found = false;
+        foreach (string file in allFiles)
+        {
+            if (file.Contains(itemName))
+            {
+                found = true;
+                System.Diagnostics.Process.Start(file);
+                string url = HttpContext.Current.Request.Url.AbsoluteUri + "?content=" + content;
+            }
+        }
+        if(!found)
+        {
+            foreach(string dir in allDirectories)
+            {
+                if (dir.Contains(itemName))
+                {
+                    string[] insideFiles = System.IO.Directory.GetFiles(dir);
+                    if(insideFiles.Length != 0)
+                    {
+                        foreach (var item in insideFiles)
+                        {
+                            string[] splitter = item.Split('\\');
+                            if (splitter[splitter.Length - 1].Contains(itemName))
+                            {
+                                found = true;
+                                System.Diagnostics.Process.Start(item);
+                                string url = HttpContext.Current.Request.Url.AbsoluteUri + "?content=" + content;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void AddItem(string itemName, string itemDescript, string category)
     {
         if(itemName + "" != string.Empty && itemDescript + "" != string.Empty)
         {
-            string path = @"D:\mojweb\Storage\Storage\db\" + category + ".xml";
+            string path = dbLoc + category + ".xml";
             XDocument doc;
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
             {
@@ -76,7 +160,7 @@ public partial class _Default : Page
 
     private void DeleteItem(string itemName, string category)
     {
-        string path = @"D:\mojweb\Storage\Storage\db\" + category + ".xml";
+        string path = dbLoc + category + ".xml";
         XDocument doc;
         using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
         {
@@ -112,7 +196,7 @@ public partial class _Default : Page
 
     private Dictionary<string, string> LoadContent(string contentType)
     {
-        using (FileStream fs = new FileStream(@"D:\mojweb\Storage\Storage\db\" + contentType + ".xml", FileMode.Open, FileAccess.ReadWrite))
+        using (FileStream fs = new FileStream(dbLoc + contentType + ".xml", FileMode.Open, FileAccess.ReadWrite))
         {
             var itemDescritions = new Dictionary<string, string>();
             XDocument doc = XDocument.Load(fs);
@@ -124,10 +208,5 @@ public partial class _Default : Page
             }
             return itemDescritions;
         }
-    }
-
-    protected void btnAddItem_Click(object sender, EventArgs e)
-    {
-
     }
 }

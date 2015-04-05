@@ -49,14 +49,22 @@
                   <td>
                       <div>
                           <p>
-                              <%=item %>
+                              <%=item %> 
                           </p>
                       </div>
                   </td>
                   <td>
-                      <p>
-                          <%=_itemDict[item] %>
-                      </p>
+                          <p id="<%=item %>" ondblclick="setDescript('<%=HttpUtility.HtmlEncode(_itemDict[item]) %>', '<%=item %>')">
+                              <%=_itemDict[item] %> 
+                          </p>
+                          <%if(theOne.Equals("MOVIES", StringComparison.OrdinalIgnoreCase))
+                          { %>
+                          <a href="Default.aspx?content=<%=theOne.ToLower() %>&rid=<%=item %>&action=play">Play</a>
+                          <%} 
+                            else if(theOne.Equals("MUSIC", StringComparison.OrdinalIgnoreCase))
+                            { %>
+                          <a href="http://youtube.com/results?search_query="<%=item %>>Youtube search</a>
+                            <% }%>
                   </td> 
                   <td>
                       <input type="hidden" name="<%=theOne + ":" + counter %>" id="<%=theOne.ToLower() + ":" + counter %>" value="<%=item %>"/>
@@ -85,6 +93,30 @@
           }
     } %>
     <script>
+        function setDescript(previousName, id)
+        {
+            var newDesc = prompt("Enter new descript!", previousName);
+            if (newDesc != null && newDesc != '' && previousName != newDesc)
+            {
+                var element = document.getElementById(id);
+                element.innerText = newDesc;
+                var url = updateQueryStringParameter(document.URL, 'action', 'update');
+                url = updateQueryStringParameter(url, 'rid', id);
+                url = updateQueryStringParameter(url, 'newvalue', newDesc);
+                window.location.href = url;
+            }            
+        }
+
+        function updateQueryStringParameter(uri, key, value) {
+            var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+            var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+            if (uri.match(re)) {
+                return uri.replace(re, '$1' + key + "=" + value + '$2');
+            }
+            else {
+                return uri + separator + key + "=" + value;
+            }
+        }
     </script>
     <style>
         .mainTable1 {

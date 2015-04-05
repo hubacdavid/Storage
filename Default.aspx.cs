@@ -33,7 +33,7 @@ public partial class _Default : Page
                         if (action == "delete")
                         {
                             var queryString = Request.QueryString["rid"];
-                            DeleteItem(queryString, content);
+                            DeleteItem(queryString);
                         }
                         else
                         {
@@ -56,13 +56,13 @@ public partial class _Default : Page
                     {
                         var itemName = Request.Form["addedName"];
                         var description = Request.Form["addedDescript"];
-                        AddItem(itemName, description, content);
+                        AddItem(itemName, description);
                     }
                 }
                 if (content != null)
                 {
-                    SetContent(content);
-                    _itemDict = LoadContent(content);
+                    SetContent();
+                    _itemDict = LoadContent();
                 }
         }
         catch (Exception)
@@ -130,7 +130,6 @@ public partial class _Default : Page
                             {
                                 found = true;
                                 System.Diagnostics.Process.Start(item);
-                                string url = HttpContext.Current.Request.Url.AbsoluteUri + "?content=" + content;
                                 break;
                             }
                         }
@@ -140,11 +139,11 @@ public partial class _Default : Page
         }
     }
 
-    private void AddItem(string itemName, string itemDescript, string category)
+    private void AddItem(string itemName, string itemDescript)
     {
         if(itemName + "" != string.Empty && itemDescript + "" != string.Empty)
         {
-            string path = dbLoc + category + ".xml";
+            string path = dbLoc + content + ".xml";
             XDocument doc;
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
             {
@@ -158,9 +157,9 @@ public partial class _Default : Page
         }        
     }
 
-    private void DeleteItem(string itemName, string category)
+    private void DeleteItem(string itemName)
     {
-        string path = dbLoc + category + ".xml";
+        string path = dbLoc + content + ".xml";
         XDocument doc;
         using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
         {
@@ -170,13 +169,13 @@ public partial class _Default : Page
         doc.Save(path);
     }
 
-    private void SetContent(string contentType)
+    private void SetContent()
     {
         _movies = false;
         _music = false;
         _books = false;
         _games = false;
-        switch(contentType)
+        switch(content)
         {
             case "movies":
                 _movies = true;
@@ -194,11 +193,11 @@ public partial class _Default : Page
         }
     }
 
-    private Dictionary<string, string> LoadContent(string contentType)
+    private Dictionary<string, string> LoadContent()
     {
-        using (FileStream fs = new FileStream(dbLoc + contentType + ".xml", FileMode.Open, FileAccess.ReadWrite))
+        var itemDescritions = new Dictionary<string, string>();
+        using (FileStream fs = new FileStream(dbLoc + content + ".xml", FileMode.Open, FileAccess.ReadWrite))
         {
-            var itemDescritions = new Dictionary<string, string>();
             XDocument doc = XDocument.Load(fs);
             IEnumerable<XElement> movies = doc.Descendants("item");
             foreach (var item in movies)
@@ -206,7 +205,7 @@ public partial class _Default : Page
                 itemDescritions.Add(item.Elements().Where(x => x.Name == "name").FirstOrDefault().Value,
                                     item.Elements().Where(y => y.Name == "description").FirstOrDefault().Value);          
             }
-            return itemDescritions;
         }
+        return itemDescritions;
     }
 }

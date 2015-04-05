@@ -54,8 +54,8 @@
                       </div>
                   </td>
                   <td>
-                          <p id="<%=item %>" ondblclick="setDescript('<%=HttpUtility.HtmlEncode(_itemDict[item]) %>', '<%=item %>')">
-                              <%=_itemDict[item] %> 
+                          <p>
+                              <%=_itemDict[item] %> (<a id="<%=item %>" href="#" onclick="setDescript('<%=HttpUtility.HtmlEncode(_itemDict[item]) %>', '<%=item %>')">Edit</a>)
                           </p>
                           <%if(theOne.Equals("MOVIES", StringComparison.OrdinalIgnoreCase))
                           { %>
